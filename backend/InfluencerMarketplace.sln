@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CB712182-214C-4B34-8D6E-ADC5463352F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfluencerMarketplace.API", "src\API\InfluencerMarketplace.API.csproj", "{693F3494-5F54-4280-AA45-5497E3AB874B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfluencerMarketplace.Core", "src\Core\InfluencerMarketplace.Core.csproj", "{B94B2C03-42B9-4ACE-AE23-01C42E85B812}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfluencerMarketplace.Infrastructure", "src\Infrastructure\InfluencerMarketplace.Infrastructure.csproj", "{29DA5F93-D987-4583-8599-DD148B9EFED9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfluencerMarketplace.Shared", "src\Shared\InfluencerMarketplace.Shared.csproj", "{3844BFD3-ACD2-42AB-B32F-6FB91172344E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{693F3494-5F54-4280-AA45-5497E3AB874B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{693F3494-5F54-4280-AA45-5497E3AB874B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{693F3494-5F54-4280-AA45-5497E3AB874B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{693F3494-5F54-4280-AA45-5497E3AB874B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B94B2C03-42B9-4ACE-AE23-01C42E85B812}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B94B2C03-42B9-4ACE-AE23-01C42E85B812}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B94B2C03-42B9-4ACE-AE23-01C42E85B812}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B94B2C03-42B9-4ACE-AE23-01C42E85B812}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29DA5F93-D987-4583-8599-DD148B9EFED9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29DA5F93-D987-4583-8599-DD148B9EFED9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29DA5F93-D987-4583-8599-DD148B9EFED9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29DA5F93-D987-4583-8599-DD148B9EFED9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3844BFD3-ACD2-42AB-B32F-6FB91172344E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3844BFD3-ACD2-42AB-B32F-6FB91172344E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3844BFD3-ACD2-42AB-B32F-6FB91172344E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3844BFD3-ACD2-42AB-B32F-6FB91172344E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{693F3494-5F54-4280-AA45-5497E3AB874B} = {CB712182-214C-4B34-8D6E-ADC5463352F0}
+		{B94B2C03-42B9-4ACE-AE23-01C42E85B812} = {CB712182-214C-4B34-8D6E-ADC5463352F0}
+		{29DA5F93-D987-4583-8599-DD148B9EFED9} = {CB712182-214C-4B34-8D6E-ADC5463352F0}
+		{3844BFD3-ACD2-42AB-B32F-6FB91172344E} = {CB712182-214C-4B34-8D6E-ADC5463352F0}
+	EndGlobalSection
+EndGlobal

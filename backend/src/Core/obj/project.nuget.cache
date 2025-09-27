@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "gc89rd918LBHlJw+pOp5wIesUfafQT2KCHIfLchHcGnj0GynAbPWviV4R7dezzTZzwZH1gBUfe9q2T81UgrxVA==",
+  "success": true,
+  "projectFilePath": "/home/notcool/Desktop/inf-market/backend/src/Core/InfluencerMarketplace.Core.csproj",
+  "expectedPackageFiles": [
+    "/home/notcool/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.19/microsoft.aspnetcore.app.ref.8.0.19.nupkg.sha512"
+  ],
+  "logs": []
+}
