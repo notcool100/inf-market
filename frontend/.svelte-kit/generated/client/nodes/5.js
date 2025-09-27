@@ -1,0 +1,1 @@
+export { default as component } from "../../../../src/routes/brand/dashboard/+page.svelte";
