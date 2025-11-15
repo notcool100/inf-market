@@ -112,6 +112,9 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 builder.Services.AddScoped<INavigationRepository, NavigationRepository>();
 builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
+builder.Services.AddScoped<ICampaignDeliverableRepository, CampaignDeliverableRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -121,6 +124,10 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<INavigationService, NavigationService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
+builder.Services.AddScoped<ICampaignDeliverableService, CampaignDeliverableService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -163,6 +170,10 @@ if (enableSwagger)
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
+
+// Add middleware
+app.UseMiddleware<InfluencerMarketplace.API.Middleware.RequestLoggingMiddleware>();
+app.UseMiddleware<InfluencerMarketplace.API.Middleware.ErrorHandlingMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -136,6 +136,12 @@ namespace InfluencerMarketplace.Infrastructure.Services
             return await _campaignRepository.UpdateCampaignStatusAsync(campaignId, campaignStatus);
         }
 
+        public async Task<IEnumerable<CampaignDto>> SearchCampaignsAsync(string status = null, decimal? minBudget = null, decimal? maxBudget = null, DateTime? startDate = null, DateTime? endDate = null, string platform = null, string niche = null)
+        {
+            var campaigns = await _campaignRepository.SearchCampaignsAsync(status, minBudget, maxBudget, startDate, endDate, platform, niche);
+            return MapToDtoList(campaigns);
+        }
+
         private CampaignDto MapToDto(Campaign campaign)
         {
             return new CampaignDto

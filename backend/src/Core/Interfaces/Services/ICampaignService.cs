@@ -16,5 +16,6 @@ namespace InfluencerMarketplace.Core.Interfaces.Services
         Task<bool> DeleteCampaignAsync(Guid id);
         Task<bool> AssignInfluencerToCampaignAsync(Guid campaignId, Guid influencerId);
         Task<bool> UpdateCampaignStatusAsync(Guid campaignId, string status);
+        Task<IEnumerable<CampaignDto>> SearchCampaignsAsync(string status = null, decimal? minBudget = null, decimal? maxBudget = null, DateTime? startDate = null, DateTime? endDate = null, string platform = null, string niche = null);
     }
 }

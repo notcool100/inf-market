@@ -29,5 +29,6 @@ namespace InfluencerMarketplace.Core.Models
         public bool IsRead { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? ReadAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 }

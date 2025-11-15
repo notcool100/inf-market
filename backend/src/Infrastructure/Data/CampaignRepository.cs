@@ -241,6 +241,67 @@ namespace InfluencerMarketplace.Infrastructure.Data
             // Otherwise, serialize if it's an object
             return jsonString ?? "null";
         }
+
+        public async Task<IEnumerable<Campaign>> SearchCampaignsAsync(string status = null, decimal? minBudget = null, decimal? maxBudget = null, DateTime? startDate = null, DateTime? endDate = null, string platform = null, string niche = null)
+        {
+            using var connection = CreateConnection();
+            
+            var sql = "SELECT * FROM Campaigns WHERE 1=1";
+            var parameters = new Dictionary<string, object>();
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                sql += " AND Status = @Status";
+                parameters["Status"] = status;
+            }
+
+            if (minBudget.HasValue)
+            {
+                sql += " AND Budget >= @MinBudget";
+                parameters["MinBudget"] = minBudget.Value;
+            }
+
+            if (maxBudget.HasValue)
+            {
+                sql += " AND Budget <= @MaxBudget";
+                parameters["MaxBudget"] = maxBudget.Value;
+            }
+
+            if (startDate.HasValue)
+            {
+                sql += " AND StartDate >= @StartDate";
+                parameters["StartDate"] = startDate.Value;
+            }
+
+            if (endDate.HasValue)
+            {
+                sql += " AND EndDate <= @EndDate";
+                parameters["EndDate"] = endDate.Value;
+            }
+
+            if (!string.IsNullOrEmpty(platform))
+            {
+                sql += " AND TargetPlatforms::text LIKE @Platform";
+                parameters["Platform"] = $"%{platform}%";
+            }
+
+            if (!string.IsNullOrEmpty(niche))
+            {
+                sql += " AND EXISTS (SELECT 1 FROM InfluencerProfiles WHERE InfluencerProfiles.UserId = Campaigns.InfluencerId AND InfluencerProfiles.NicheFocus LIKE @Niche)";
+                parameters["Niche"] = $"%{niche}%";
+            }
+
+            sql += " ORDER BY CreatedAt DESC";
+
+            var campaigns = await connection.QueryAsync<Campaign>(sql, parameters);
+            
+            foreach (var campaign in campaigns)
+            {
+                DeserializeJsonFields(campaign);
+            }
+            
+            return campaigns;
+        }
     }
 }
 

@@ -205,6 +205,33 @@ namespace InfluencerMarketplace.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        /// <summary>
+        /// Search and filter campaigns
+        /// </summary>
+        /// <param name="status">Campaign status filter</param>
+        /// <param name="minBudget">Minimum budget filter</param>
+        /// <param name="maxBudget">Maximum budget filter</param>
+        /// <param name="startDate">Start date filter</param>
+        /// <param name="endDate">End date filter</param>
+        /// <param name="platform">Platform filter</param>
+        /// <param name="niche">Niche filter</param>
+        /// <returns>List of filtered campaigns</returns>
+        /// <response code="200">Returns the list of filtered campaigns</response>
+        [HttpGet("search")]
+        [ProducesResponseType(typeof(IEnumerable<CampaignDto>), 200)]
+        public async Task<ActionResult<IEnumerable<CampaignDto>>> SearchCampaigns(
+            [FromQuery] string status = null,
+            [FromQuery] decimal? minBudget = null,
+            [FromQuery] decimal? maxBudget = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] string platform = null,
+            [FromQuery] string niche = null)
+        {
+            var campaigns = await _campaignService.SearchCampaignsAsync(status, minBudget, maxBudget, startDate, endDate, platform, niche);
+            return Ok(campaigns);
+        }
     }
 
     public class UpdateStatusRequest
