@@ -19,11 +19,19 @@ namespace InfluencerMarketplace.Infrastructure.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
+        private readonly INavigationService _navigationService;
+        private readonly IPermissionService _permissionService;
 
-        public AuthService(IUserRepository userRepository, IConfiguration configuration)
+        public AuthService(
+            IUserRepository userRepository, 
+            IConfiguration configuration,
+            INavigationService navigationService,
+            IPermissionService permissionService)
         {
             _userRepository = userRepository;
             _configuration = configuration;
+            _navigationService = navigationService;
+            _permissionService = permissionService;
         }
 
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
@@ -51,6 +59,10 @@ namespace InfluencerMarketplace.Infrastructure.Services
             var roles = await _userRepository.GetUserRolesAsync(user.Id);
             var token = await GenerateJwtTokenAsync(user.Id, user.Email, roles.ToArray());
 
+            // Get user permissions and navigation items
+            var permissions = await _permissionService.GetUserPermissionsAsync(user.Id);
+            var navigationItems = await _navigationService.GetUserNavigationAsync(user.Id);
+
             return new AuthResponse
             {
                 Success = true,
@@ -61,6 +73,15 @@ namespace InfluencerMarketplace.Infrastructure.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Roles = roles.ToList(),
+                Permissions = permissions.Select(p => new Shared.DTOs.Auth.PermissionDto
+                {
+                    Id = p.Id,
+                    Code = p.Code,
+                    Description = p.Description,
+                    Module = p.Module,
+                    Action = p.Action
+                }).ToList(),
+                NavigationItems = MapNavigationItems(navigationItems),
                 Message = "Login successful."
             };
         }
@@ -99,6 +120,10 @@ namespace InfluencerMarketplace.Infrastructure.Services
             var roles = new[] { roleName };
             var token = await GenerateJwtTokenAsync(userId, user.Email, roles);
 
+            // Get user permissions and navigation items
+            var permissions = await _permissionService.GetUserPermissionsAsync(userId);
+            var navigationItems = await _navigationService.GetUserNavigationAsync(userId);
+
             return new AuthResponse
             {
                 Success = true,
@@ -109,6 +134,15 @@ namespace InfluencerMarketplace.Infrastructure.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Roles = roles.ToList(),
+                Permissions = permissions.Select(p => new Shared.DTOs.Auth.PermissionDto
+                {
+                    Id = p.Id,
+                    Code = p.Code,
+                    Description = p.Description,
+                    Module = p.Module,
+                    Action = p.Action
+                }).ToList(),
+                NavigationItems = MapNavigationItems(navigationItems),
                 Message = "Registration successful."
             };
         }
@@ -170,6 +204,31 @@ namespace InfluencerMarketplace.Infrastructure.Services
             }
             
             return true;
+        }
+
+        private List<Shared.DTOs.Auth.NavigationItemDto> MapNavigationItems(IEnumerable<Core.Models.NavigationItem> items)
+        {
+            var dtos = new List<Shared.DTOs.Auth.NavigationItemDto>();
+            
+            foreach (var item in items)
+            {
+                var dto = new Shared.DTOs.Auth.NavigationItemDto
+                {
+                    Id = item.Id,
+                    Label = item.Label,
+                    Icon = item.Icon,
+                    Url = item.Url,
+                    Order = item.Order,
+                    ParentId = item.ParentId,
+                    GroupId = item.GroupId,
+                    GroupName = item.Group?.Name,
+                    GroupOrder = item.Group?.Order,
+                    Children = item.Children != null ? MapNavigationItems(item.Children) : new List<Shared.DTOs.Auth.NavigationItemDto>()
+                };
+                dtos.Add(dto);
+            }
+            
+            return dtos;
         }
     }
 }

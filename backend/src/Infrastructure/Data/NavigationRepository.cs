@@ -40,22 +40,54 @@ namespace InfluencerMarketplace.Infrastructure.Data
                     url, 
                     ""order"", 
                     ""parentId"", 
-                    ""groupId""
+                    ""groupId"",
+                    ""groupName"",
+                    ""groupOrder""
                 FROM get_user_navigation(@UserId)";
             
-            var items = await connection.QueryAsync<NavigationItem>(sql, new { UserId = userId });
+            // Use dynamic query to get items with group info
+            var items = await connection.QueryAsync<dynamic>(sql, new { UserId = userId });
             
-            // Group items by group and build hierarchy
-            var groupedItems = items
-                .GroupBy(item => item.GroupId)
-                .SelectMany(group => group.OrderBy(item => item.Order))
-                .ToList();
+            var navigationItems = new List<NavigationItem>();
+            var groupDict = new Dictionary<Guid?, NavigationGroup>();
+            
+            foreach (var row in items)
+            {
+                var item = new NavigationItem
+                {
+                    Id = (Guid)row.id,
+                    Label = (string)row.label,
+                    Icon = (string)row.icon,
+                    Url = (string)row.url,
+                    Order = (int)row.order,
+                    ParentId = row.parentId as Guid?,
+                    GroupId = row.groupId as Guid?
+                };
+                
+                // Create or get group
+                if (item.GroupId.HasValue && !groupDict.ContainsKey(item.GroupId))
+                {
+                    groupDict[item.GroupId] = new NavigationGroup
+                    {
+                        Id = item.GroupId.Value,
+                        Name = row.groupName as string,
+                        Order = row.groupOrder as int? ?? 0
+                    };
+                }
+                
+                if (item.GroupId.HasValue && groupDict.ContainsKey(item.GroupId))
+                {
+                    item.Group = groupDict[item.GroupId];
+                }
+                
+                navigationItems.Add(item);
+            }
             
             // Build parent-child relationships
-            var itemDict = groupedItems.ToDictionary(item => item.Id);
+            var itemDict = navigationItems.ToDictionary(item => item.Id);
             var rootItems = new List<NavigationItem>();
             
-            foreach (var item in groupedItems)
+            foreach (var item in navigationItems)
             {
                 if (item.ParentId.HasValue && itemDict.ContainsKey(item.ParentId.Value))
                 {
