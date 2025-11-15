@@ -5,3 +5,5 @@ INSERT INTO Roles (Id, Name, Description) VALUES
     ('33333333-3333-3333-3333-333333333333', 'Influencer', 'Influencer/Creator user')
 ON CONFLICT (Id) DO NOTHING;
 
+-- Note: Navigation, Permissions, and Role mappings are seeded in seed_navigation_permissions.sql
+

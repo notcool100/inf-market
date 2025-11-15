@@ -45,3 +45,4 @@
 
 -- Seed data
 \i public/table/seed_data.sql
+\i public/table/seed_navigation_permissions.sql
