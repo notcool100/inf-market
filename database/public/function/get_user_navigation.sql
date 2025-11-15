@@ -1,16 +1,9 @@
--- Function to get navigation items for a user based on their roles
-CREATE OR REPLACE FUNCTION get_user_navigation(p_user_id UUID)
-RETURNS TABLE (
-    id UUID,
-    label TEXT,
-    icon TEXT,
-    url TEXT,
-    "order" INT4,
-    "parentId" UUID,
-    "groupId" UUID,
-    "groupName" TEXT,
-    "groupOrder" INT4
-) AS $$
+-- DROP FUNCTION public.get_user_navigation(uuid);
+
+CREATE OR REPLACE FUNCTION public.get_user_navigation(p_user_id uuid)
+ RETURNS TABLE(id uuid, label text, icon text, url text, "order" integer, "parentId" uuid, "groupId" uuid, "groupName" text, "groupOrder" integer)
+ LANGUAGE plpgsql
+AS $function$
 BEGIN
     RETURN QUERY
     SELECT DISTINCT
@@ -25,12 +18,12 @@ BEGIN
         ng."order" as "groupOrder"
     FROM navigation_items ni
     INNER JOIN role_navigation rn ON ni.id = rn."navigationItemId"
-    INNER JOIN UserRoles ur ON rn."roleId" = ur."RoleId"
+    INNER JOIN UserRoles ur ON rn."roleId" = ur.RoleId
     LEFT JOIN navigation_groups ng ON ni."groupId" = ng.id
-    WHERE ur."UserId" = p_user_id
+    WHERE ur.UserId = p_user_id
         AND ni."isActive" = true
         AND (ng."isActive" = true OR ng."isActive" IS NULL)
     ORDER BY ng."order", ni."order";
 END;
-$$ LANGUAGE plpgsql;
-
+$function$
+;

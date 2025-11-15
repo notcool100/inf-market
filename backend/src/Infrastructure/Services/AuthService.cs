@@ -191,7 +191,7 @@ namespace InfluencerMarketplace.Infrastructure.Services
         private bool VerifyPasswordHash(string password, string storedHash)
         {
             var bytes = Convert.FromBase64String(storedHash);
-            var salt = new byte[128 / 8]; // HMACSHA512 key size
+            var salt = new byte[128];
             Buffer.BlockCopy(bytes, 0, salt, 0, salt.Length);
             
             using var hmac = new HMACSHA512(salt);
