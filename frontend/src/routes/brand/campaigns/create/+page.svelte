@@ -1,10 +1,13 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { apiClient } from '../../../../lib/api';
+  import { campaignsApi } from '../../../../lib/api';
+  import { toastStore } from '../../../../lib/stores/toastStore';
+  import { validateCampaign } from '../../../../lib/utils/validation';
   import LoadingSpinner from '../../../../lib/components/LoadingSpinner.svelte';
+  import { PLATFORMS } from '../../../../lib/constants';
   
   let isLoading = false;
-  let error = '';
+  let errors: Record<string, string> = {};
   
   // Form data
   let title = '';
@@ -13,26 +16,21 @@
   let startDate = '';
   let endDate = '';
   let requirements = '';
-  let deliverables = [''];
-  let targetPlatforms = ['Instagram'];
-  let targetAudience = {
+  let deliverables: string[] = [];
+  let newDeliverable = '';
+  let targetPlatforms: string[] = [];
+  let targetAudience: Record<string, any> = {
     ageRange: '',
     gender: '',
     location: '',
     interests: ''
   };
   
-  const platformOptions = [
-    'Instagram',
-    'TikTok',
-    'YouTube',
-    'Facebook',
-    'LinkedIn',
-    'Twitter'
-  ];
-  
   function addDeliverable() {
-    deliverables = [...deliverables, ''];
+    if (newDeliverable.trim()) {
+      deliverables = [...deliverables, newDeliverable.trim()];
+      newDeliverable = '';
+    }
   }
   
   function removeDeliverable(index: number) {
@@ -48,50 +46,46 @@
   }
   
   async function handleSubmit() {
-    if (!title || !description || !budget || !startDate || !endDate || !requirements) {
-      error = 'Please fill in all required fields';
-      return;
-    }
-    
-    if (new Date(startDate) >= new Date(endDate)) {
-      error = 'End date must be after start date';
-      return;
-    }
-    
-    if (deliverables.filter(d => d.trim()).length === 0) {
-      error = 'Please add at least one deliverable';
-      return;
-    }
-    
-    if (targetPlatforms.length === 0) {
-      error = 'Please select at least one target platform';
+    errors = {};
+    const validation = validateCampaign({
+      title,
+      description,
+      budget,
+      startDate,
+      endDate,
+      requirements,
+      deliverables,
+      targetPlatforms,
+      targetAudience: targetAudience || {},
+    });
+
+    if (!validation.isValid) {
+      validation.errors.forEach((err) => {
+        errors[err.field] = err.message;
+      });
+      toastStore.error('Please fix the errors in the form');
       return;
     }
     
     try {
       isLoading = true;
-      error = '';
-      
-      const campaignData = {
+      const campaign = await campaignsApi.createCampaign({
         title,
         description,
         budget,
         startDate,
         endDate,
         requirements,
-        deliverables: deliverables.filter(d => d.trim()),
+        deliverables,
         targetPlatforms,
-        targetAudience
-      };
+        targetAudience: Object.keys(targetAudience).length > 0 ? targetAudience : undefined,
+      });
       
-      const response = await apiClient.post('/api/brand/campaigns', campaignData);
-      
-      if (response.data) {
-        goto(`/brand/campaigns/${response.data.id}`);
-      }
+      toastStore.success('Campaign created successfully!');
+      goto(`/brand/campaigns/${campaign.id}`);
     } catch (err: any) {
       console.error('Error creating campaign:', err);
-      error = err.response?.data?.message || 'Failed to create campaign';
+      toastStore.error(err.message || 'Failed to create campaign');
     } finally {
       isLoading = false;
     }
@@ -112,11 +106,6 @@
     </div>
 
     <form on:submit|preventDefault={handleSubmit} class="space-y-6">
-      {#if error}
-        <div class="rounded-md bg-red-50 p-4">
-          <div class="text-sm text-red-700">{error}</div>
-        </div>
-      {/if}
 
       <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6 space-y-6">
@@ -131,9 +120,12 @@
                   id="title"
                   bind:value={title}
                   required
-                  class="form-input"
+                  class="form-input {errors.title ? 'border-red-500' : ''}"
                   placeholder="Enter campaign title"
                 />
+                {#if errors.title}
+                  <p class="mt-1 text-sm text-red-600">{errors.title}</p>
+                {/if}
               </div>
               
               <div>
@@ -143,9 +135,12 @@
                   bind:value={description}
                   required
                   rows="4"
-                  class="form-input"
+                  class="form-input {errors.description ? 'border-red-500' : ''}"
                   placeholder="Describe your campaign goals and expectations"
                 ></textarea>
+                {#if errors.description}
+                  <p class="mt-1 text-sm text-red-600">{errors.description}</p>
+                {/if}
               </div>
               
               <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
@@ -208,34 +203,39 @@
           <div>
             <h3 class="text-lg font-medium text-gray-900">Deliverables</h3>
             <div class="mt-4 space-y-3">
-              {#each deliverables as deliverable, index}
-                <div class="flex items-center space-x-3">
-                  <input
-                    type="text"
-                    bind:value={deliverables[index]}
-                    placeholder="Enter deliverable (e.g., 1 Instagram post, 3 stories)"
-                    class="flex-1 form-input"
-                  />
-                  {#if deliverables.length > 1}
+              <div class="flex gap-2">
+                <input
+                  type="text"
+                  bind:value={newDeliverable}
+                  placeholder="Enter deliverable (e.g., 1 Instagram post, 3 stories)"
+                  class="flex-1 form-input"
+                  on:keydown={(e) => e.key === 'Enter' && (e.preventDefault(), addDeliverable())}
+                />
+                <button
+                  type="button"
+                  on:click={addDeliverable}
+                  class="btn btn-secondary"
+                >
+                  Add
+                </button>
+              </div>
+              {#if errors.deliverables}
+                <p class="text-sm text-red-600">{errors.deliverables}</p>
+              {/if}
+              <div class="flex flex-wrap gap-2">
+                {#each deliverables as deliverable, index}
+                  <span class="inline-flex items-center gap-1 px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">
+                    {deliverable}
                     <button
                       type="button"
                       on:click={() => removeDeliverable(index)}
-                      class="text-red-600 hover:text-red-800"
+                      class="text-indigo-600 hover:text-indigo-800"
                     >
-                      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                      ×
                     </button>
-                  {/if}
-                </div>
-              {/each}
-              <button
-                type="button"
-                on:click={addDeliverable}
-                class="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
-              >
-                + Add Deliverable
-              </button>
+                  </span>
+                {/each}
+              </div>
             </div>
           </div>
 
@@ -244,7 +244,7 @@
             <h3 class="text-lg font-medium text-gray-900">Target Platforms</h3>
             <div class="mt-4">
               <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {#each platformOptions as platform}
+                {#each PLATFORMS as platform}
                   <label class="flex items-center">
                     <input
                       type="checkbox"
@@ -256,6 +256,9 @@
                   </label>
                 {/each}
               </div>
+              {#if errors.targetPlatforms}
+                <p class="mt-1 text-sm text-red-600">{errors.targetPlatforms}</p>
+              {/if}
             </div>
           </div>
 

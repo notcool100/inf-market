@@ -12,7 +12,13 @@ export const nodes = [
 	() => import('./nodes/8'),
 	() => import('./nodes/9'),
 	() => import('./nodes/10'),
-	() => import('./nodes/11')
+	() => import('./nodes/11'),
+	() => import('./nodes/12'),
+	() => import('./nodes/13'),
+	() => import('./nodes/14'),
+	() => import('./nodes/15'),
+	() => import('./nodes/16'),
+	() => import('./nodes/17')
 ];
 
 export const server_loads = [];
@@ -20,14 +26,20 @@ export const server_loads = [];
 export const dictionary = {
 		"/": [2],
 		"/brand/campaigns": [3],
-		"/brand/campaigns/create": [4],
-		"/brand/dashboard": [5],
-		"/influencers": [8],
-		"/influencer/dashboard": [6],
-		"/influencer/profile/create": [7],
-		"/login": [9],
-		"/register": [10],
-		"/wallet": [11]
+		"/brand/campaigns/create": [6],
+		"/brand/campaigns/[id]": [4],
+		"/brand/campaigns/[id]/edit": [5],
+		"/brand/dashboard": [7],
+		"/influencers": [12],
+		"/influencers/[id]": [13],
+		"/influencer/campaigns/[id]/deliverables": [8],
+		"/influencer/dashboard": [9],
+		"/influencer/profile/create": [10],
+		"/influencer/profile/edit": [11],
+		"/login": [14],
+		"/payments": [15],
+		"/register": [16],
+		"/wallet": [17]
 	};
 
 export const hooks = {

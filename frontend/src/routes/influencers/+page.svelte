@@ -1,12 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { apiClient } from '../../lib/api';
-  import { formatCurrency, debounce } from '../../lib/utils';
+  import { influencersApi } from '../../lib/api';
+  import { toastStore } from '../../lib/stores/toastStore';
+  import { formatCurrency, formatLargeNumber } from '../../lib/utils/format';
+  import type { InfluencerProfileDto } from '../../lib/api/types';
   import LoadingSpinner from '../../lib/components/LoadingSpinner.svelte';
+  import { NICHE_OPTIONS } from '../../lib/constants';
   
   let isLoading = true;
-  let influencers: any[] = [];
-  let filteredInfluencers: any[] = [];
+  let influencers: InfluencerProfileDto[] = [];
   let error = '';
   
   // Search and filter state
@@ -16,27 +18,6 @@
   let minFollowers = '';
   let maxRate = '';
   
-  const nicheOptions = [
-    'Fashion & Beauty',
-    'Lifestyle',
-    'Travel',
-    'Food & Cooking',
-    'Fitness & Health',
-    'Technology',
-    'Gaming',
-    'Business & Finance',
-    'Education',
-    'Entertainment',
-    'Art & Design',
-    'Music',
-    'Sports',
-    'Parenting',
-    'Home & Garden',
-    'Automotive',
-    'Photography',
-    'Other'
-  ];
-  
   onMount(async () => {
     await loadInfluencers();
   });
@@ -44,48 +25,36 @@
   async function loadInfluencers() {
     try {
       isLoading = true;
-      const response = await apiClient.get('/api/influencers');
-      influencers = response.data;
-      filteredInfluencers = influencers;
+      error = '';
+      const filters: any = {};
+      
+      if (nicheFilter) filters.niche = nicheFilter;
+      if (locationFilter) filters.location = locationFilter;
+      if (minFollowers) filters.minFollowers = parseInt(minFollowers);
+      if (maxRate) filters.maxRate = parseFloat(maxRate);
+      
+      influencers = await influencersApi.search(filters);
+      
+      // Client-side search filtering
+      if (searchTerm) {
+        influencers = influencers.filter(influencer => 
+          influencer.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          influencer.bio.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
     } catch (err: any) {
       console.error('Error loading influencers:', err);
-      error = 'Failed to load influencers';
+      error = err.message || 'Failed to load influencers';
+      toastStore.error(error);
     } finally {
       isLoading = false;
     }
   }
   
-  const debouncedFilter = debounce(() => {
-    filterInfluencers();
-  }, 300);
-  
-  function filterInfluencers() {
-    filteredInfluencers = influencers.filter(influencer => {
-      const matchesSearch = !searchTerm || 
-        influencer.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        influencer.bio.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesNiche = !nicheFilter || influencer.nicheFocus === nicheFilter;
-      const matchesLocation = !locationFilter || 
-        influencer.location.toLowerCase().includes(locationFilter.toLowerCase());
-      
-      const matchesFollowers = !minFollowers || 
-        influencer.followersCount >= parseInt(minFollowers);
-      
-      const matchesRate = !maxRate || 
-        influencer.minCampaignRate <= parseFloat(maxRate);
-      
-      return matchesSearch && matchesNiche && matchesLocation && matchesFollowers && matchesRate;
-    });
-  }
-  
   $: {
-    searchTerm;
-    nicheFilter;
-    locationFilter;
-    minFollowers;
-    maxRate;
-    debouncedFilter();
+    if (searchTerm || nicheFilter || locationFilter || minFollowers || maxRate) {
+      loadInfluencers();
+    }
   }
 </script>
 
@@ -120,7 +89,7 @@
           <label for="niche" class="form-label">Niche</label>
           <select id="niche" bind:value={nicheFilter} class="form-input">
             <option value="">All Niches</option>
-            {#each nicheOptions as niche}
+            {#each NICHE_OPTIONS as niche}
               <option value={niche}>{niche}</option>
             {/each}
           </select>
@@ -172,7 +141,7 @@
     <div class="rounded-md bg-red-50 p-4">
       <div class="text-sm text-red-700">{error}</div>
     </div>
-  {:else if filteredInfluencers.length === 0}
+  {:else if influencers.length === 0}
     <div class="text-center py-12">
       <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -187,12 +156,12 @@
     <div class="bg-white shadow rounded-lg">
       <div class="px-4 py-5 sm:px-6">
         <h3 class="text-lg leading-6 font-medium text-gray-900">
-          {filteredInfluencers.length} Influencer{filteredInfluencers.length !== 1 ? 's' : ''} Found
+          {influencers.length} Influencer{influencers.length !== 1 ? 's' : ''} Found
         </h3>
       </div>
       <div class="border-t border-gray-200">
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 p-6">
-          {#each filteredInfluencers as influencer}
+          {#each influencers as influencer}
             <div class="card">
               <div class="card-body">
                 <div class="flex items-center space-x-4">
@@ -228,7 +197,7 @@
                   <div>
                     <span class="text-gray-500">Followers:</span>
                     <span class="font-medium text-gray-900">
-                      {influencer.followersCount.toLocaleString()}
+                      {formatLargeNumber(influencer.followersCount)}
                     </span>
                   </div>
                   <div>
@@ -251,13 +220,10 @@
                   </div>
                 </div>
                 
-                <div class="mt-4 flex space-x-2">
-                  <a href="/influencers/{influencer.id}" class="flex-1 btn btn-secondary text-center">
+                <div class="mt-4">
+                  <a href="/influencers/{influencer.id}" class="w-full btn btn-primary text-center block">
                     View Profile
                   </a>
-                  <button class="flex-1 btn btn-primary">
-                    Contact
-                  </button>
                 </div>
               </div>
             </div>

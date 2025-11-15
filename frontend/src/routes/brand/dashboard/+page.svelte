@@ -1,34 +1,33 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { authStore } from '../../../stores/authStore';
-  import { apiClient } from '../../../lib/api';
-  import { formatCurrency } from '../../../lib/utils';
+  import { dashboardApi, campaignsApi } from '../../../lib/api';
+  import { toastStore } from '../../../lib/stores/toastStore';
+  import { formatCurrency } from '../../../lib/utils/format';
+  import type { BrandDashboardStats, CampaignDto } from '../../../lib/api/types';
   import LoadingSpinner from '../../../lib/components/LoadingSpinner.svelte';
   import StatusBadge from '../../../lib/components/StatusBadge.svelte';
   
   let isLoading = true;
-  let stats = {
+  let stats: BrandDashboardStats = {
     totalCampaigns: 0,
     activeCampaigns: 0,
     totalSpent: 0,
     pendingPayments: 0
   };
-  let recentCampaigns: any[] = [];
+  let recentCampaigns: CampaignDto[] = [];
   let error = '';
   
   onMount(async () => {
     try {
-      // Fetch dashboard stats
-      const [statsResponse, campaignsResponse] = await Promise.all([
-        apiClient.get('/api/brand/dashboard/stats'),
-        apiClient.get('/api/brand/campaigns?limit=5')
+      [stats, recentCampaigns] = await Promise.all([
+        dashboardApi.getBrandStats(),
+        campaignsApi.getBrandCampaigns(),
       ]);
-      
-      stats = statsResponse.data;
-      recentCampaigns = campaignsResponse.data;
+      recentCampaigns = recentCampaigns.slice(0, 5);
     } catch (err: any) {
       console.error('Error loading dashboard:', err);
-      error = 'Failed to load dashboard data';
+      error = err.message || 'Failed to load dashboard data';
+      toastStore.error(error);
     } finally {
       isLoading = false;
     }

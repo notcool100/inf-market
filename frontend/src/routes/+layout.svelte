@@ -4,6 +4,7 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { authStore } from '../stores/authStore';
+  import Toast from '../lib/components/Toast.svelte';
 
   let isLoggedIn = false;
   let userRoles: string[] = [];
@@ -111,4 +112,7 @@
       </p>
     </div>
   </footer>
+
+  <!-- Toast Notifications -->
+  <Toast />
 </div>

@@ -1,13 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { apiClient } from '../../../lib/api';
-  import { formatCurrency, formatDate } from '../../../lib/utils';
+  import { goto } from '$app/navigation';
+  import { campaignsApi } from '../../../lib/api';
+  import { toastStore } from '../../../lib/stores/toastStore';
+  import { formatCurrency, formatDate } from '../../../lib/utils/format';
+  import type { CampaignDto } from '../../../lib/api/types';
   import LoadingSpinner from '../../../lib/components/LoadingSpinner.svelte';
   import StatusBadge from '../../../lib/components/StatusBadge.svelte';
   
   let isLoading = true;
-  let campaigns: any[] = [];
-  let filteredCampaigns: any[] = [];
+  let campaigns: CampaignDto[] = [];
+  let filteredCampaigns: CampaignDto[] = [];
   let error = '';
   let searchTerm = '';
   let statusFilter = 'all';
@@ -29,14 +32,29 @@
   async function loadCampaigns() {
     try {
       isLoading = true;
-      const response = await apiClient.get('/api/brand/campaigns');
-      campaigns = response.data;
+      error = '';
+      campaigns = await campaignsApi.getBrandCampaigns();
       filterCampaigns();
     } catch (err: any) {
       console.error('Error loading campaigns:', err);
-      error = 'Failed to load campaigns';
+      error = err.message || 'Failed to load campaigns';
+      toastStore.error(error);
     } finally {
       isLoading = false;
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('Are you sure you want to delete this campaign?')) {
+      return;
+    }
+
+    try {
+      await campaignsApi.deleteCampaign(id);
+      toastStore.success('Campaign deleted successfully');
+      await loadCampaigns();
+    } catch (err: any) {
+      toastStore.error(err.message || 'Failed to delete campaign');
     }
   }
   
@@ -161,11 +179,18 @@
               <a href="/brand/campaigns/{campaign.id}" class="flex-1 btn btn-secondary text-center">
                 View Details
               </a>
-              {#if campaign.status === 'Draft'}
+              {#if campaign.status === 'Draft' || campaign.status === 'Open'}
                 <a href="/brand/campaigns/{campaign.id}/edit" class="flex-1 btn btn-primary text-center">
                   Edit
                 </a>
               {/if}
+              <button
+                on:click={() => handleDelete(campaign.id)}
+                class="px-3 py-2 text-sm text-red-600 hover:text-red-800"
+                title="Delete campaign"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

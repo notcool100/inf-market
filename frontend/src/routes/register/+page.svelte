@@ -2,7 +2,9 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { authStore } from '../../stores/authStore';
-  import { apiClient } from '../../lib/api';
+  import { authApi } from '../../lib/api';
+  import { toastStore } from '../../lib/stores/toastStore';
+  import { validateRegister } from '../../lib/utils/validation';
 
   let email = '';
   let password = '';
@@ -10,8 +12,8 @@
   let firstName = '';
   let lastName = '';
   let phoneNumber = '';
-  let userType = 'Brand'; // Default to Brand
-  let errorMessage = '';
+  let userType: 'Brand' | 'Influencer' = 'Brand';
+  let errors: Record<string, string> = {};
   let isLoading = false;
   let isLoggedIn = false;
   let userRoles: string[] = [];
@@ -37,50 +39,47 @@
   });
 
   async function handleSubmit() {
-    if (!email || !password || !confirmPassword || !firstName || !lastName || !userType) {
-      errorMessage = 'Please fill in all required fields';
-      return;
-    }
+    errors = {};
+    const validation = validateRegister({
+      email,
+      password,
+      confirmPassword,
+      firstName,
+      lastName,
+      phoneNumber,
+    });
 
-    if (password !== confirmPassword) {
-      errorMessage = 'Passwords do not match';
-      return;
-    }
-
-    if (password.length < 8) {
-      errorMessage = 'Password must be at least 8 characters long';
+    if (!validation.isValid) {
+      validation.errors.forEach((err) => {
+        errors[err.field] = err.message;
+      });
       return;
     }
 
     try {
       isLoading = true;
-      errorMessage = '';
-
-      const response = await apiClient.post('/api/auth/register', {
+      const response = await authApi.register({
         email,
         password,
         confirmPassword,
         firstName,
         lastName,
         phoneNumber,
-        userType
+        userType,
       });
 
-      if (response.data.success) {
-        authStore.login(response.data);
+      authStore.login(response);
+      toastStore.success('Registration successful!');
 
-        // Redirect based on user type
-        if (userType === 'Brand') {
-          goto('/brand/dashboard');
-        } else if (userType === 'Influencer') {
-          goto('/influencer/profile/create');
-        }
-      } else {
-        errorMessage = response.data.message || 'Registration failed';
+      // Redirect based on user type
+      if (userType === 'Brand') {
+        goto('/brand/dashboard');
+      } else if (userType === 'Influencer') {
+        goto('/influencer/profile/create');
       }
     } catch (error: any) {
       console.error('Registration error:', error);
-      errorMessage = error.response?.data?.message || 'An error occurred during registration';
+      toastStore.error(error.message || 'An error occurred during registration');
     } finally {
       isLoading = false;
     }
@@ -99,20 +98,21 @@
   <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
     <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
       <form class="space-y-6" on:submit|preventDefault={handleSubmit}>
-        {#if errorMessage}
-          <div class="rounded-md bg-red-50 p-4">
-            <div class="flex">
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">{errorMessage}</h3>
-              </div>
-            </div>
-          </div>
-        {/if}
-
         <div>
           <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
           <div class="mt-1">
-            <input id="email" name="email" type="email" autocomplete="email" required bind:value={email} class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" />
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              bind:value={email}
+              class="block w-full appearance-none rounded-md border {errors.email ? 'border-red-500' : 'border-gray-300'} px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            />
+            {#if errors.email}
+              <p class="mt-1 text-sm text-red-600">{errors.email}</p>
+            {/if}
           </div>
         </div>
 
@@ -120,14 +120,36 @@
           <div>
             <label for="first-name" class="block text-sm font-medium text-gray-700">First name</label>
             <div class="mt-1">
-              <input id="first-name" name="first-name" type="text" autocomplete="given-name" required bind:value={firstName} class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" />
+              <input
+                id="first-name"
+                name="first-name"
+                type="text"
+                autocomplete="given-name"
+                required
+                bind:value={firstName}
+                class="block w-full appearance-none rounded-md border {errors.firstName ? 'border-red-500' : 'border-gray-300'} px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+              />
+              {#if errors.firstName}
+                <p class="mt-1 text-sm text-red-600">{errors.firstName}</p>
+              {/if}
             </div>
           </div>
 
           <div>
             <label for="last-name" class="block text-sm font-medium text-gray-700">Last name</label>
             <div class="mt-1">
-              <input id="last-name" name="last-name" type="text" autocomplete="family-name" required bind:value={lastName} class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" />
+              <input
+                id="last-name"
+                name="last-name"
+                type="text"
+                autocomplete="family-name"
+                required
+                bind:value={lastName}
+                class="block w-full appearance-none rounded-md border {errors.lastName ? 'border-red-500' : 'border-gray-300'} px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+              />
+              {#if errors.lastName}
+                <p class="mt-1 text-sm text-red-600">{errors.lastName}</p>
+              {/if}
             </div>
           </div>
         </div>
@@ -135,21 +157,53 @@
         <div>
           <label for="phone-number" class="block text-sm font-medium text-gray-700">Phone number</label>
           <div class="mt-1">
-            <input id="phone-number" name="phone-number" type="tel" autocomplete="tel" bind:value={phoneNumber} class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" />
+            <input
+              id="phone-number"
+              name="phone-number"
+              type="tel"
+              autocomplete="tel"
+              bind:value={phoneNumber}
+              class="block w-full appearance-none rounded-md border {errors.phoneNumber ? 'border-red-500' : 'border-gray-300'} px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            />
+            {#if errors.phoneNumber}
+              <p class="mt-1 text-sm text-red-600">{errors.phoneNumber}</p>
+            {/if}
           </div>
         </div>
 
         <div>
           <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
           <div class="mt-1">
-            <input id="password" name="password" type="password" autocomplete="new-password" required bind:value={password} class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" />
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              required
+              bind:value={password}
+              class="block w-full appearance-none rounded-md border {errors.password ? 'border-red-500' : 'border-gray-300'} px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            />
+            {#if errors.password}
+              <p class="mt-1 text-sm text-red-600">{errors.password}</p>
+            {/if}
           </div>
         </div>
 
         <div>
           <label for="confirm-password" class="block text-sm font-medium text-gray-700">Confirm password</label>
           <div class="mt-1">
-            <input id="confirm-password" name="confirm-password" type="password" autocomplete="new-password" required bind:value={confirmPassword} class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" />
+            <input
+              id="confirm-password"
+              name="confirm-password"
+              type="password"
+              autocomplete="new-password"
+              required
+              bind:value={confirmPassword}
+              class="block w-full appearance-none rounded-md border {errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            />
+            {#if errors.confirmPassword}
+              <p class="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+            {/if}
           </div>
         </div>
 

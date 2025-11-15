@@ -2,11 +2,13 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { authStore } from '../../stores/authStore';
-  import { apiClient } from '../../lib/api';
+  import { authApi } from '../../lib/api';
+  import { toastStore } from '../../lib/stores/toastStore';
+  import { validateLogin } from '../../lib/utils/validation';
 
   let email = '';
   let password = '';
-  let errorMessage = '';
+  let errors: Record<string, string> = {};
   let isLoading = false;
   let isLoggedIn = false;
   let userRoles: string[] = [];
@@ -32,37 +34,36 @@
   });
 
   async function handleSubmit() {
-    if (!email || !password) {
-      errorMessage = 'Please enter both email and password';
+    errors = {};
+    const validation = validateLogin({ email, password });
+
+    if (!validation.isValid) {
+      validation.errors.forEach((err) => {
+        errors[err.field] = err.message;
+      });
       return;
     }
 
     try {
       isLoading = true;
-      errorMessage = '';
+      const response = await authApi.login({ email, password });
+      authStore.login(response);
 
-      const response = await apiClient.post('/api/auth/login', {
-        email,
-        password
-      });
+      toastStore.success('Login successful!');
 
-      if (response.data.success) {
-        authStore.login(response.data);
-
-        // Redirect based on user role
-        if (response.data.roles.includes('Brand')) {
-          goto('/brand/dashboard');
-        } else if (response.data.roles.includes('Influencer')) {
-          goto('/influencer/dashboard');
-        } else if (response.data.roles.includes('Admin')) {
-          goto('/admin/dashboard');
-        }
+      // Redirect based on user role
+      if (response.roles.includes('Brand')) {
+        goto('/brand/dashboard');
+      } else if (response.roles.includes('Influencer')) {
+        goto('/influencer/dashboard');
+      } else if (response.roles.includes('Admin')) {
+        goto('/admin/dashboard');
       } else {
-        errorMessage = response.data.message || 'Login failed';
+        goto('/');
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      errorMessage = error.response?.data?.message || 'An error occurred during login';
+      toastStore.error(error.message || 'An error occurred during login');
     } finally {
       isLoading = false;
     }
@@ -81,29 +82,42 @@
   <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
     <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
       <form class="space-y-6" on:submit|preventDefault={handleSubmit}>
-        {#if errorMessage}
-          <div class="rounded-md bg-red-50 p-4">
-            <div class="flex">
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">{errorMessage}</h3>
-              </div>
-            </div>
-          </div>
-        {/if}
-
         <div>
           <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
           <div class="mt-1">
-            <input id="email" name="email" type="email" autocomplete="email" required bind:value={email} class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" />
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              bind:value={email}
+              class="block w-full appearance-none rounded-md border {errors.email ? 'border-red-500' : 'border-gray-300'} px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            />
+            {#if errors.email}
+              <p class="mt-1 text-sm text-red-600">{errors.email}</p>
+            {/if}
           </div>
         </div>
 
         <div>
           <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
           <div class="mt-1">
-            <input id="password" name="password" type="password" autocomplete="current-password" required bind:value={password} class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" />
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+              bind:value={password}
+              class="block w-full appearance-none rounded-md border {errors.password ? 'border-red-500' : 'border-gray-300'} px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            />
+            {#if errors.password}
+              <p class="mt-1 text-sm text-red-600">{errors.password}</p>
+            {/if}
           </div>
         </div>
+        
 
         <div class="flex items-center justify-between">
           <div class="flex items-center">
@@ -112,7 +126,7 @@
           </div>
 
           <div class="text-sm">
-            <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Forgot your password?</a>
+            <a href="/forgot-password" class="font-medium text-indigo-600 hover:text-indigo-500">Forgot your password?</a>
           </div>
         </div>
 

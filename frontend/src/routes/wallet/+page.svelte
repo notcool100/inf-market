@@ -1,22 +1,27 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { apiClient } from '../../lib/api';
-  import { formatCurrency, formatDateTime } from '../../lib/utils';
+  import { walletApi } from '../../lib/api';
+  import { toastStore } from '../../lib/stores/toastStore';
+  import { formatCurrency, formatDateTime } from '../../lib/utils/format';
+  import type { WalletDto, WalletTransactionDto } from '../../lib/api/types';
   import LoadingSpinner from '../../lib/components/LoadingSpinner.svelte';
   import Modal from '../../lib/components/Modal.svelte';
   
   let isLoading = true;
-  let wallet: any = null;
-  let transactions: any[] = [];
+  let wallet: WalletDto | null = null;
+  let transactions: WalletTransactionDto[] = [];
   let error = '';
   
   // Modals
   let showDepositModal = false;
   let showWithdrawModal = false;
+  let showTransferModal = false;
   
   // Form data
   let depositAmount = 0;
   let withdrawAmount = 0;
+  let transferAmount = 0;
+  let transferRecipientId = '';
   let paymentMethod = 'eSewa';
   let isProcessing = false;
   
@@ -33,16 +38,15 @@
   async function loadWalletData() {
     try {
       isLoading = true;
-      const [walletResponse, transactionsResponse] = await Promise.all([
-        apiClient.get('/api/wallet'),
-        apiClient.get('/api/wallet/transactions')
+      error = '';
+      [wallet, transactions] = await Promise.all([
+        walletApi.getWallet(),
+        walletApi.getTransactions()
       ]);
-      
-      wallet = walletResponse.data;
-      transactions = transactionsResponse.data;
     } catch (err: any) {
       console.error('Error loading wallet data:', err);
-      error = 'Failed to load wallet data';
+      error = err.message || 'Failed to load wallet data';
+      toastStore.error(error);
     } finally {
       isLoading = false;
     }
@@ -50,30 +54,21 @@
   
   async function handleDeposit() {
     if (!depositAmount || depositAmount <= 0) {
-      error = 'Please enter a valid deposit amount';
+      toastStore.error('Please enter a valid deposit amount');
       return;
     }
     
     try {
       isProcessing = true;
       error = '';
-      
-      const response = await apiClient.post('/api/wallet/deposit', {
-        amount: depositAmount,
-        paymentMethod,
-        description: `Wallet deposit via ${paymentMethod}`
-      });
-      
-      if (response.data.success) {
-        showDepositModal = false;
-        depositAmount = 0;
-        await loadWalletData();
-      } else {
-        error = response.data.message || 'Deposit failed';
-      }
+      wallet = await walletApi.deposit(depositAmount, paymentMethod);
+      toastStore.success('Deposit successful!');
+      showDepositModal = false;
+      depositAmount = 0;
+      await loadWalletData();
     } catch (err: any) {
       console.error('Error processing deposit:', err);
-      error = err.response?.data?.message || 'Failed to process deposit';
+      toastStore.error(err.message || 'Failed to process deposit');
     } finally {
       isProcessing = false;
     }
@@ -81,35 +76,58 @@
   
   async function handleWithdraw() {
     if (!withdrawAmount || withdrawAmount <= 0) {
-      error = 'Please enter a valid withdrawal amount';
+      toastStore.error('Please enter a valid withdrawal amount');
       return;
     }
     
-    if (withdrawAmount > wallet.balance) {
-      error = 'Insufficient balance';
+    if (!wallet || withdrawAmount > wallet.balance) {
+      toastStore.error('Insufficient balance');
       return;
     }
     
     try {
       isProcessing = true;
       error = '';
-      
-      const response = await apiClient.post('/api/wallet/withdraw', {
-        amount: withdrawAmount,
-        paymentMethod,
-        description: `Wallet withdrawal via ${paymentMethod}`
-      });
-      
-      if (response.data.success) {
-        showWithdrawModal = false;
-        withdrawAmount = 0;
-        await loadWalletData();
-      } else {
-        error = response.data.message || 'Withdrawal failed';
-      }
+      wallet = await walletApi.withdraw(withdrawAmount, paymentMethod);
+      toastStore.success('Withdrawal request submitted!');
+      showWithdrawModal = false;
+      withdrawAmount = 0;
+      await loadWalletData();
     } catch (err: any) {
       console.error('Error processing withdrawal:', err);
-      error = err.response?.data?.message || 'Failed to process withdrawal';
+      toastStore.error(err.message || 'Failed to process withdrawal');
+    } finally {
+      isProcessing = false;
+    }
+  }
+
+  async function handleTransfer() {
+    if (!transferAmount || transferAmount <= 0) {
+      toastStore.error('Please enter a valid transfer amount');
+      return;
+    }
+
+    if (!transferRecipientId) {
+      toastStore.error('Please enter recipient ID');
+      return;
+    }
+
+    if (!wallet || transferAmount > wallet.balance) {
+      toastStore.error('Insufficient balance');
+      return;
+    }
+
+    try {
+      isProcessing = true;
+      wallet = await walletApi.transfer(transferRecipientId, transferAmount);
+      toastStore.success('Transfer successful!');
+      showTransferModal = false;
+      transferAmount = 0;
+      transferRecipientId = '';
+      await loadWalletData();
+    } catch (err: any) {
+      console.error('Error processing transfer:', err);
+      toastStore.error(err.message || 'Failed to process transfer');
     } finally {
       isProcessing = false;
     }
@@ -180,7 +198,7 @@
           <div class="ml-5 w-0 flex-1">
             <dl>
               <dt class="text-sm font-medium text-indigo-100 truncate">Current Balance</dt>
-              <dd class="text-3xl font-semibold text-white">{formatCurrency(wallet.balance)}</dd>
+              <dd class="text-3xl font-semibold text-white">{formatCurrency(wallet?.balance || 0)}</dd>
             </dl>
           </div>
         </div>
@@ -193,10 +211,17 @@
           </button>
           <button
             on:click={() => showWithdrawModal = true}
-            disabled={wallet.balance <= 0}
+            disabled={!wallet || wallet.balance <= 0}
             class="bg-white bg-opacity-20 backdrop-blur-sm text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-opacity-30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Withdraw
+          </button>
+          <button
+            on:click={() => showTransferModal = true}
+            disabled={!wallet || wallet.balance <= 0}
+            class="bg-white bg-opacity-20 backdrop-blur-sm text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-opacity-30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Transfer
           </button>
         </div>
       </div>

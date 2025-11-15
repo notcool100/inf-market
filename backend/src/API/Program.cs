@@ -167,9 +167,9 @@ if (enableSwagger)
     });
 }
 
-app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
+
+app.UseHttpsRedirection();
 
 // Add middleware
 app.UseMiddleware<InfluencerMarketplace.API.Middleware.RequestLoggingMiddleware>();

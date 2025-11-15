@@ -2,11 +2,17 @@
 	"/": [],
 	"/brand/campaigns": [],
 	"/brand/campaigns/create": [],
+	"/brand/campaigns/[id]": [],
+	"/brand/campaigns/[id]/edit": [],
 	"/brand/dashboard": [],
 	"/influencers": [],
+	"/influencers/[id]": [],
+	"/influencer/campaigns/[id]/deliverables": [],
 	"/influencer/dashboard": [],
 	"/influencer/profile/create": [],
+	"/influencer/profile/edit": [],
 	"/login": [],
+	"/payments": [],
 	"/register": [],
 	"/wallet": []
 }
