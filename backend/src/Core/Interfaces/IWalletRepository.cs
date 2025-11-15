@@ -7,9 +7,9 @@ namespace InfluencerMarketplace.Core.Interfaces
 {
     public interface IWalletRepository : IRepository<Wallet>
     {
-        Task<Wallet> GetByUserIdAsync(Guid userId);
+        Task<Wallet> GetWalletByUserIdAsync(Guid userId);
         Task<bool> UpdateBalanceAsync(Guid walletId, decimal newBalance);
-        Task<Guid> AddTransactionAsync(WalletTransaction transaction);
-        Task<IEnumerable<WalletTransaction>> GetTransactionsByWalletIdAsync(Guid walletId);
+        Task<Guid> CreateTransactionAsync(WalletTransaction transaction);
+        Task<IEnumerable<WalletTransaction>> GetTransactionsAsync(Guid walletId);
     }
 }

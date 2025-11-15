@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>InfluencerMarketplace.API</name>
+    </assembly>
+    <members>
+        <member name="T:InfluencerMarketplace.API.Controllers.AuthController">
+            <summary>
+            Authentication and authorization endpoints
+            </summary>
+        </member>
+        <member name="M:InfluencerMarketplace.API.Controllers.AuthController.Login(InfluencerMarketplace.Shared.DTOs.Auth.LoginRequest)">
+            <summary>
+            Authenticate user and get JWT token
+            </summary>
+            <param name="request">Login credentials</param>
+            <returns>Authentication response with JWT token</returns>
+            <response code="200">Returns the authentication token and user information</response>
+            <response code="400">Invalid credentials or request</response>
+        </member>
+        <member name="M:InfluencerMarketplace.API.Controllers.AuthController.Register(InfluencerMarketplace.Shared.DTOs.Auth.RegisterRequest)">
+            <summary>
+            Register a new user account
+            </summary>
+            <param name="request">User registration information</param>
+            <returns>Authentication response with JWT token</returns>
+            <response code="200">Returns the authentication token and user information</response>
+            <response code="400">Invalid registration data or user already exists</response>
+        </member>
+        <member name="M:InfluencerMarketplace.API.Controllers.AuthController.GetCurrentUser">
+            <summary>
+            Get current authenticated user information
+            </summary>
+            <returns>Current user details and roles</returns>
+            <response code="200">Returns the current user information</response>
+            <response code="401">Unauthorized - Invalid or missing token</response>
+        </member>
+        <member name="T:InfluencerMarketplace.API.Controllers.CampaignController">
+            <summary>
+            Campaign management endpoints for creating and managing marketing campaigns
+            </summary>
+        </member>
+        <member name="M:InfluencerMarketplace.API.Controllers.CampaignController.GetCampaign(System.Guid)">
+            <summary>
+            Get a campaign by ID
+            </summary>
+            <param name="id">Campaign unique identifier</param>
+            <returns>Campaign details</returns>
+            <response code="200">Returns the campaign</response>
+            <response code="404">Campaign not found</response>
+        </member>
+        <member name="M:InfluencerMarketplace.API.Controllers.CampaignController.GetBrandCampaigns">
+            <summary>
+            Get all campaigns for the authenticated brand user
+            </summary>
+            <returns>List of campaigns created by the brand</returns>
+            <response code="200">Returns the list of campaigns</response>
+            <response code="401">Unauthorized - Invalid or missing token</response>
+            <response code="403">Forbidden - User is not a Brand</response>
+        </member>
+        <member name="M:InfluencerMarketplace.API.Controllers.CampaignController.CreateCampaign(InfluencerMarketplace.Shared.DTOs.Campaign.CreateCampaignRequest)">
+            <summary>
+            Create a new marketing campaign
+            </summary>
+            <param name="request">Campaign creation details</param>
+            <returns>Created campaign</returns>
+            <response code="201">Campaign created successfully</response>
+            <response code="400">Invalid campaign data</response>
+            <response code="401">Unauthorized - Invalid or missing token</response>
+            <response code="403">Forbidden - User is not a Brand</response>
+        </member>
+        <member name="T:InfluencerMarketplace.API.Controllers.PaymentController">
+            <summary>
+            Payment management endpoints for processing payments and escrow transactions
+            </summary>
+        </member>
+        <member name="T:InfluencerMarketplace.API.Controllers.WalletController">
+            <summary>
+            Wallet management endpoints for user wallets and transactions
+            </summary>
+        </member>
+    </members>
+</doc>

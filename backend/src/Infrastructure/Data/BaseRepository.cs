@@ -22,7 +22,9 @@ namespace InfluencerMarketplace.Infrastructure.Data
 
         protected IDbConnection CreateConnection()
         {
-            return new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            var connectionString = _configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            return new NpgsqlConnection(connectionString);
         }
 
         public virtual async Task<T> GetByIdAsync(Guid id)

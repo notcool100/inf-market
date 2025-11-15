@@ -1,0 +1,12 @@
+/home/notcool/Desktop/inf-market/backend/src/Shared/bin/Debug/net8.0/InfluencerMarketplace.Shared.deps.json
+/home/notcool/Desktop/inf-market/backend/src/Shared/bin/Debug/net8.0/InfluencerMarketplace.Shared.dll
+/home/notcool/Desktop/inf-market/backend/src/Shared/bin/Debug/net8.0/InfluencerMarketplace.Shared.pdb
+/home/notcool/Desktop/inf-market/backend/src/Shared/obj/Debug/net8.0/InfluencerMarketplace.Shared.GeneratedMSBuildEditorConfig.editorconfig
+/home/notcool/Desktop/inf-market/backend/src/Shared/obj/Debug/net8.0/InfluencerMarketplace.Shared.AssemblyInfoInputs.cache
+/home/notcool/Desktop/inf-market/backend/src/Shared/obj/Debug/net8.0/InfluencerMarketplace.Shared.AssemblyInfo.cs
+/home/notcool/Desktop/inf-market/backend/src/Shared/obj/Debug/net8.0/InfluencerMarketplace.Shared.csproj.CoreCompileInputs.cache
+/home/notcool/Desktop/inf-market/backend/src/Shared/obj/Debug/net8.0/InfluencerMarketplace.Shared.sourcelink.json
+/home/notcool/Desktop/inf-market/backend/src/Shared/obj/Debug/net8.0/InfluencerMarketplace.Shared.dll
+/home/notcool/Desktop/inf-market/backend/src/Shared/obj/Debug/net8.0/refint/InfluencerMarketplace.Shared.dll
+/home/notcool/Desktop/inf-market/backend/src/Shared/obj/Debug/net8.0/InfluencerMarketplace.Shared.pdb
+/home/notcool/Desktop/inf-market/backend/src/Shared/obj/Debug/net8.0/ref/InfluencerMarketplace.Shared.dll

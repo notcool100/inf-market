@@ -1,0 +1,13 @@
+-- Create Reviews table
+CREATE TABLE IF NOT EXISTS Reviews (
+    Id UUID PRIMARY KEY,
+    CampaignId UUID NOT NULL REFERENCES Campaigns(Id) ON DELETE CASCADE,
+    ReviewerId UUID NOT NULL REFERENCES Users(Id),
+    InfluencerProfileId UUID NOT NULL REFERENCES InfluencerProfiles(Id) ON DELETE CASCADE,
+    Rating INT NOT NULL CHECK (Rating BETWEEN 1 AND 5),
+    Comment TEXT,
+    IsPublic BOOLEAN NOT NULL DEFAULT TRUE,
+    CreatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
+    UpdatedAt TIMESTAMP NOT NULL DEFAULT NOW()
+);
+

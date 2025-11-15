@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("InfluencerMarketplace.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+03c9f7bf3ed4a2c1047a8399928b965a4c33ae55")]
 [assembly: System.Reflection.AssemblyProductAttribute("InfluencerMarketplace.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("InfluencerMarketplace.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

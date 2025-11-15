@@ -1,0 +1,14 @@
+-- Create Users table
+CREATE TABLE IF NOT EXISTS Users (
+    Id UUID PRIMARY KEY,
+    Email VARCHAR(255) NOT NULL UNIQUE,
+    PasswordHash TEXT NOT NULL,
+    FirstName VARCHAR(100) NOT NULL,
+    LastName VARCHAR(100) NOT NULL,
+    PhoneNumber VARCHAR(20),
+    ProfilePictureUrl TEXT,
+    CreatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
+    UpdatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
+    IsActive BOOLEAN NOT NULL DEFAULT TRUE
+);
+

@@ -7,6 +7,7 @@ namespace InfluencerMarketplace.Shared.DTOs.Auth
     {
         public bool Success { get; set; }
         public string Token { get; set; }
+        public string RefreshToken { get; set; }
         public DateTime Expiration { get; set; }
         public Guid UserId { get; set; }
         public string Email { get; set; }

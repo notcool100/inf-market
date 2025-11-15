@@ -1,0 +1,7 @@
+-- Create UserRoles table
+CREATE TABLE IF NOT EXISTS UserRoles (
+    UserId UUID NOT NULL REFERENCES Users(Id) ON DELETE CASCADE,
+    RoleId UUID NOT NULL REFERENCES Roles(Id) ON DELETE CASCADE,
+    PRIMARY KEY (UserId, RoleId)
+);
+

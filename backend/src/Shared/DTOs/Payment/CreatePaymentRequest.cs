@@ -20,6 +20,10 @@ namespace InfluencerMarketplace.Shared.DTOs.Payment
         [Required]
         public string PaymentMethod { get; set; }
 
+        public string Type { get; set; }
+
+        public string TransactionReference { get; set; }
+
         public string Notes { get; set; }
     }
 }

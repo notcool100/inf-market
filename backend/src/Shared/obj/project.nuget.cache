@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "zS+vobnCszGvT5zQRD3+0hFLPsEjxA8Vd0JepJNwsgsLvFIOiGQWfnFqNuLBvdYzuN6J7Srrog50kk1TkhW6nA==",
+  "dgSpecHash": "2A3z9dTHOunQzMdFLlCEFLAAQpCWFGMvnwb2OB5rwanXxZGAT5H1w3cM/9UscWwQFOqdBqraNNgl1TZTvps6sQ==",
   "success": true,
   "projectFilePath": "/home/notcool/Desktop/inf-market/backend/src/Shared/InfluencerMarketplace.Shared.csproj",
   "expectedPackageFiles": [
-    "/home/notcool/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.19/microsoft.aspnetcore.app.ref.8.0.19.nupkg.sha512"
+    "/home/notcool/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.20/microsoft.aspnetcore.app.ref.8.0.20.nupkg.sha512"
   ],
   "logs": []
 }
