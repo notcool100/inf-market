@@ -126,18 +126,18 @@ namespace InfluencerMarketplace.Infrastructure.Data
             
             var sql = @"
                 INSERT INTO InfluencerProfiles (
-                    Id, UserId, Bio, NicheFocus, FollowersCount, 
-                    InstagramHandle, TikTokHandle, YouTubeChannel, 
-                    FacebookPage, LinkedInProfile, WebsiteUrl, 
-                    MinCampaignRate, ContentTypes, Demographics, 
-                    Location, IsVerified, AverageRating, 
+                    Id, UserId, Bio, NicheFocus, FollowersCount,
+                    InstagramHandle, TikTokHandle, YouTubeChannel,
+                    FacebookPage, LinkedInProfile, WebsiteUrl,
+                    MinCampaignRate, ContentTypes, Demographics,
+                    Location, IsVerified, AverageRating,
                     CompletedCampaigns, CreatedAt, UpdatedAt
                 )
                 VALUES (
                     @Id, @UserId, @Bio, @NicheFocus, @FollowersCount,
                     @InstagramHandle, @TikTokHandle, @YouTubeChannel,
                     @FacebookPage, @LinkedInProfile, @WebsiteUrl,
-                    @MinCampaignRate, @ContentTypes, @Demographics,
+                    @MinCampaignRate, @ContentTypes::jsonb, @Demographics::jsonb,
                     @Location, @IsVerified, @AverageRating,
                     @CompletedCampaigns, @CreatedAt, @UpdatedAt
                 )
@@ -178,7 +178,7 @@ namespace InfluencerMarketplace.Infrastructure.Data
             entity.UpdatedAt = DateTime.UtcNow;
             
             var sql = @"
-                UPDATE InfluencerProfiles 
+                UPDATE InfluencerProfiles
                 SET UserId = @UserId,
                     Bio = @Bio,
                     NicheFocus = @NicheFocus,
@@ -190,8 +190,8 @@ namespace InfluencerMarketplace.Infrastructure.Data
                     LinkedInProfile = @LinkedInProfile,
                     WebsiteUrl = @WebsiteUrl,
                     MinCampaignRate = @MinCampaignRate,
-                    ContentTypes = @ContentTypes,
-                    Demographics = @Demographics,
+                    ContentTypes = @ContentTypes::jsonb,
+                    Demographics = @Demographics::jsonb,
                     Location = @Location,
                     IsVerified = @IsVerified,
                     AverageRating = @AverageRating,

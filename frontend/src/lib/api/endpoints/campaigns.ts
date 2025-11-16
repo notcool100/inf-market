@@ -16,35 +16,35 @@ export const campaignsApi = {
 	 * Get all campaigns for authenticated brand
 	 */
 	getBrandCampaigns: async (): Promise<CampaignDto[]> => {
-		return apiClient.get<CampaignDto[]>("/api/campaigns/brand");
+		return apiClient.get<CampaignDto[]>("/api/campaign/brand");
 	},
 
 	/**
 	 * Get all campaigns for authenticated influencer
 	 */
 	getInfluencerCampaigns: async (): Promise<CampaignDto[]> => {
-		return apiClient.get<CampaignDto[]>("/api/campaigns/influencer");
+		return apiClient.get<CampaignDto[]>("/api/campaign/influencer");
 	},
 
 	/**
 	 * Get available campaigns (for influencers to apply)
 	 */
 	getAvailableCampaigns: async (): Promise<CampaignDto[]> => {
-		return apiClient.get<CampaignDto[]>("/api/campaigns/available");
+		return apiClient.get<CampaignDto[]>("/api/campaign/available");
 	},
 
 	/**
 	 * Get campaign by ID
 	 */
 	getCampaign: async (id: string): Promise<CampaignDto> => {
-		return apiClient.get<CampaignDto>(`/api/campaigns/${id}`);
+		return apiClient.get<CampaignDto>(`/api/campaign/${id}`);
 	},
 
 	/**
 	 * Create new campaign
 	 */
 	createCampaign: async (data: CreateCampaignRequest): Promise<CampaignDto> => {
-		return apiClient.post<CampaignDto>("/api/campaigns", data);
+		return apiClient.post<CampaignDto>("/api/campaign", data);
 	},
 
 	/**
@@ -54,28 +54,28 @@ export const campaignsApi = {
 		id: string,
 		data: CreateCampaignRequest,
 	): Promise<CampaignDto> => {
-		return apiClient.put<CampaignDto>(`/api/campaigns/${id}`, data);
+		return apiClient.put<CampaignDto>(`/api/campaign/${id}`, data);
 	},
 
 	/**
 	 * Delete campaign
 	 */
 	deleteCampaign: async (id: string): Promise<void> => {
-		return apiClient.delete(`/api/campaigns/${id}`);
+		return apiClient.delete(`/api/campaign/${id}`);
 	},
 
 	/**
 	 * Apply to campaign (influencer)
 	 */
 	applyToCampaign: async (id: string): Promise<void> => {
-		return apiClient.post(`/api/campaigns/${id}/apply`);
+		return apiClient.post(`/api/campaign/${id}/apply`);
 	},
 
 	/**
 	 * Update campaign status
 	 */
 	updateCampaignStatus: async (id: string, status: string): Promise<void> => {
-		return apiClient.put(`/api/campaigns/${id}/status`, { status });
+		return apiClient.put(`/api/campaign/${id}/status`, { status });
 	},
 
 	/**
@@ -97,7 +97,7 @@ export const campaignsApi = {
 			}
 		});
 		return apiClient.get<CampaignDto[]>(
-			`/api/campaigns/search?${params.toString()}`,
+			`/api/campaign/search?${params.toString()}`,
 		);
 	},
 

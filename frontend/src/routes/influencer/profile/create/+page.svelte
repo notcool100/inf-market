@@ -86,7 +86,7 @@
         demographics
       };
       
-      const response = await apiClient.post('/api/influencer/profile', profileData);
+      const response = await apiClient.post('/api/influencerprofile', profileData);
       
       if (response.data) {
         goto('/influencer/dashboard');

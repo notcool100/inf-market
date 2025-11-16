@@ -126,8 +126,8 @@ namespace InfluencerMarketplace.Infrastructure.Data
                 )
                 VALUES (
                     @Id, @Title, @Description, @BrandId, @InfluencerId, @Budget,
-                    @StartDate, @EndDate, @Requirements, @Deliverables,
-                    @TargetAudience, @TargetPlatforms, @Status, @CreatedAt, @UpdatedAt
+                    @StartDate, @EndDate, @Requirements, @Deliverables::jsonb,
+                    @TargetAudience::jsonb, @TargetPlatforms::jsonb, @Status, @CreatedAt, @UpdatedAt
                 )
                 RETURNING Id";
             
